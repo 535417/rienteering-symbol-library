@@ -380,7 +380,7 @@ function showListPage(skipHashUpdate) {
   $listPage.style.display = 'block';
   $detailPage.classList.remove('show');
   if (!skipHashUpdate && window.location.hash) {
-    history.pushState('', document.title, window.location.pathname + window.location.search);
+    history.replaceState(null, '', window.location.pathname + window.location.search);
   }
 }
 
@@ -408,7 +408,7 @@ function openDetail(std, code) {
   renderDetail();
   $listPage.style.display = 'none';
   $detailPage.classList.add('show');
-  window.location.hash = 'detail/' + std + '/' + encodeURIComponent(code);
+  history.pushState(null, '', '#detail/' + std + '/' + encodeURIComponent(code));
   window.scrollTo(0, 0);
 }
 
@@ -493,7 +493,7 @@ function navigateDetail(direction) {
   }
   currentDetailIndex = newIndex;
   var item = currentDetailList[currentDetailIndex];
-  window.location.hash = 'detail/' + item.standard + '/' + encodeURIComponent(item.code);
+  history.replaceState(null, '', '#detail/' + item.standard + '/' + encodeURIComponent(item.code));
   renderDetail();
   window.scrollTo(0, 0);
 }

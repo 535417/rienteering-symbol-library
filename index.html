@@ -490,7 +490,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
     $listPage.classList.remove('hide');
     $detailPage.classList.remove('show');
     if (!skipHashUpdate && window.location.hash) {
-      history.pushState('', document.title, window.location.pathname + window.location.search);
+      history.replaceState(null, '', window.location.pathname + window.location.search);
     }
   }
 
@@ -521,7 +521,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
     renderDetail();
     $listPage.classList.add('hide');
     $detailPage.classList.add('show');
-    window.location.hash = 'detail/' + encodeURIComponent(std) + '/' + encodeURIComponent(code);
+    history.pushState(null, '', '#detail/' + encodeURIComponent(std) + '/' + encodeURIComponent(code));
     window.scrollTo(0, 0);
   }
 
@@ -595,7 +595,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
     else if (newIndex >= currentDetailList.length) newIndex = 0;
     currentDetailIndex = newIndex;
     var item = currentDetailList[currentDetailIndex];
-    window.location.hash = 'detail/' + encodeURIComponent(item.standard) + '/' + encodeURIComponent(item.code);
+    history.replaceState(null, '', '#detail/' + encodeURIComponent(item.standard) + '/' + encodeURIComponent(item.code));
     renderDetail();
     window.scrollTo(0, 0);
   }
