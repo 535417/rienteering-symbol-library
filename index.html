@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>定向地图图例库</title>
+<style>
+/* ===== Reset & Base ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#f0f5f3;color:#1a1a2e;min-height:100vh;transition:background .3s,color .3s}
+
+/* ===== Dark Mode ===== */
+@media (prefers-color-scheme:dark){
+  body{background:#0d1117;color:#e6edf3}
+  .header{background:rgba(22,27,34,.85)!important;border-color:rgba(240,246,240,.08)!important}
+  .header h1{color:#e6edf3!important}
+  .header .subtitle{color:#8b949e!important}
+  .search-input{background:rgba(255,255,255,.06)!important;border-color:rgba(240,246,240,.12)!important;color:#e6edf3!important}
+  .search-input::placeholder{color:#6e7681!important}
+  .tab-bar{background:rgba(22,27,34,.7)!important;border-color:rgba(240,246,240,.08)!important}
+  .tab{color:#8b949e!important}
+  .tab:hover{background:rgba(45,106,79,.15)!important;color:#3fb950!important}
+  .tab.active{background:rgba(45,106,79,.25)!important;color:#3fb950!important;border-color:#3fb950!important}
+  .card{background:rgba(22,27,34,.7)!important;border-color:rgba(240,246,240,.06)!important}
+  .card:hover{background:rgba(22,27,34,.9)!important;border-color:rgba(45,106,79,.3)!important}
+  .card .code{color:#6e7681!important}
+  .card .name{color:#e6edf3!important}
+  .card .name-en{color:#6e7681!important}
+  .card .desc{color:#8b949e!important}
+  .img-wrap{background:rgba(255,255,255,.04)!important;border-color:rgba(240,246,240,.06)!important}
+  .group-header{color:#8b949e!important}
+  .detail-nav{background:rgba(22,27,34,.85)!important;border-color:rgba(240,246,240,.08)!important}
+  .detail-nav .back-btn{color:#e6edf3!important}
+  .detail-nav .nav-count{color:#8b949e!important}
+  .detail-nav .nav-arrow{color:#e6edf3!important}
+  .detail-code{color:#3fb950!important}
+  .detail-name{color:#e6edf3!important}
+  .detail-img-wrap{background:rgba(255,255,255,.04)!important;border-color:rgba(240,246,240,.06)!important}
+  .desc-card{background:rgba(22,27,34,.7)!important;border-color:rgba(240,246,240,.06)!important}
+  .desc-card p{color:#c9d1d9!important}
+  .bottom-nav .nav-btn{background:rgba(22,27,34,.7)!important;border-color:rgba(240,246,240,.1)!important;color:#e6edf3!important}
+  .bottom-nav .nav-btn:hover{background:rgba(45,106,79,.25)!important;border-color:#3fb950!important}
+  .empty-state{color:#6e7681!important}
+  .toast{background:rgba(22,27,34,.95)!important;color:#e6edf3!important}
+}
+@media (prefers-color-scheme:dark){
+  .desc-card p strong,.desc-card p b{color:#e6edf3!important}
+}
+
+/* ===== Header ===== */
+.header{position:sticky;top:0;z-index:100;background:rgba(240,246,243,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(45,106,79,.1);padding:16px 16px 0;text-align:center}
+.header h1{font-size:1.25rem;font-weight:700;color:#2D6A4F;letter-spacing:-.01em;margin-bottom:2px}
+.header .subtitle{font-size:.75rem;color:#6b8a7a;margin-bottom:2px}
+
+/* ===== Search ===== */
+.search-wrap{padding:10px 16px 12px}
+.search-input{width:100%;max-width:480px;margin:0 auto;display:block;padding:10px 16px 10px 40px;border:1.5px solid rgba(45,106,79,.15);border-radius:24px;font-size:.9rem;background:rgba(255,255,255,.6);color:#1a1a2e;outline:none;transition:all .2s;font-family:inherit}
+.search-input:focus{border-color:#2D6A4F;box-shadow:0 0 0 3px rgba(45,106,79,.1);background:rgba(255,255,255,.9)}
+.search-input::placeholder{color:#9bb5a8}
+.search-icon{position:absolute;left:28px;top:50%;transform:translateY(-50%);color:#9bb5a8;pointer-events:none;width:18px;height:18px}
+.search-wrap-inner{position:relative;max-width:480px;margin:0 auto}
+
+/* ===== Tabs ===== */
+.tab-bar{display:flex;gap:4px;padding:0 16px 12px;justify-content:center;flex-wrap:wrap}
+.tab{padding:8px 18px;border-radius:20px;border:1.5px solid transparent;font-size:.82rem;cursor:pointer;transition:all .2s;background:transparent;color:#5a7a6a;font-family:inherit;white-space:nowrap;user-select:none}
+.tab:hover{background:rgba(45,106,79,.08);color:#2D6A4F}
+.tab.active{background:rgba(45,106,79,.12);color:#2D6A4F;border-color:rgba(45,106,79,.3);font-weight:600}
+.tab .count{font-size:.7rem;opacity:.65;margin-left:4px}
+
+/* ===== Card List ===== */
+.list-wrap{padding:0 12px 80px;max-width:900px;margin:0 auto}
+.group-header{padding:12px 8px 6px;font-size:.78rem;font-weight:600;color:#6b8a7a;display:flex;align-items:center;gap:8px}
+.group-header::after{content:'';flex:1;height:1px;background:rgba(45,106,79,.12);border-radius:1px}
+
+/* ===== Card ===== */
+.card{display:flex;width:100%;text-align:left;gap:12px;padding:12px;margin-bottom:8px;background:rgba(255,255,255,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(45,106,79,.08);border-radius:16px;cursor:pointer;transition:all .2s;overflow:hidden;font-family:inherit}
+.card:hover{transform:scale(1.01);background:rgba(255,255,255,.85);border-color:rgba(45,106,79,.2);box-shadow:0 4px 20px rgba(45,106,79,.08)}
+.card:active{transform:scale(.985)}
+.card:focus-visible,.tab:focus-visible,.back-btn:focus-visible,.nav-arrow:focus-visible,.nav-btn:focus-visible{outline:3px solid rgba(45,106,79,.35);outline-offset:2px}
+.card .img-col{flex-shrink:0;width:72px}
+.img-wrap{width:72px;height:56px;background:rgba(255,255,255,.8);border-radius:12px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(0,0,0,.06);overflow:hidden}
+.img-wrap img{max-width:90%;max-height:90%;object-fit:contain;image-rendering:auto}
+.card .text-col{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.card .code{font-family:'SF Mono','Cascadia Code','Consolas',monospace;font-size:.75rem;color:#8a9e94;letter-spacing:.03em;line-height:1}
+.card .name{font-size:.9rem;font-weight:600;color:#1a1a2e;line-height:1.3}
+.card .name-en{font-size:.72rem;color:#8a9e94;line-height:1.2}
+.card .desc{font-size:.75rem;color:#6b7a72;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ===== Empty ===== */
+.empty-state{text-align:center;padding:60px 20px;color:#9bb5a8}
+.empty-state .icon{width:54px;height:54px;margin:0 auto 12px;opacity:.45;color:currentColor}
+.empty-state .text{font-size:.9rem}
+
+/* ===== Detail Page ===== */
+.detail-page{display:none;min-height:100vh;padding-bottom:100px}
+.detail-page.show{display:block}
+
+/* Detail Nav */
+.detail-nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(240,246,243,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(45,106,79,.1)}
+.detail-nav .back-btn{display:flex;align-items:center;gap:4px;padding:6px 10px;border:none;background:transparent;color:#2D6A4F;font-size:.85rem;cursor:pointer;border-radius:8px;transition:all .15s;font-family:inherit}
+.detail-nav .back-btn:hover{background:rgba(45,106,79,.1)}
+.detail-nav .back-btn svg{width:20px;height:20px}
+.detail-nav .nav-arrows{display:flex;align-items:center;gap:2px}
+.detail-nav .nav-arrow{padding:6px 8px;border:none;background:transparent;color:#2D6A4F;cursor:pointer;border-radius:8px;transition:all .15s;font-size:1.1rem;line-height:1}
+.detail-nav .nav-arrow:hover{background:rgba(45,106,79,.1)}
+.detail-nav .nav-arrow:active{transform:scale(.9)}
+.detail-nav .nav-count{font-size:.78rem;color:#6b8a7a;min-width:56px;text-align:center;user-select:none}
+
+/* Detail Content */
+.detail-content{max-width:600px;margin:0 auto;padding:24px 16px;display:flex;flex-direction:column;align-items:center}
+.detail-img-wrap{width:200px;height:160px;background:rgba(255,255,255,.8);border-radius:16px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(45,106,79,.1);margin-bottom:16px;overflow:hidden}
+.detail-img-wrap img{max-width:90%;max-height:90%;object-fit:contain;image-rendering:auto}
+.detail-code{font-family:'SF Mono','Cascadia Code','Consolas',monospace;font-size:1.1rem;color:#2D6A4F;margin-bottom:4px;letter-spacing:.04em}
+.detail-name{font-size:1.35rem;font-weight:700;color:#1a1a2e;margin-bottom:4px;text-align:center}
+.detail-name-en{font-size:.85rem;color:#6b8a7a;margin-bottom:20px;text-align:center}
+
+/* Description Card */
+.desc-card{width:100%;background:rgba(255,255,255,.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(45,106,79,.08);border-radius:16px;padding:20px;margin-bottom:24px}
+.desc-card p{font-size:.9rem;line-height:1.75;color:#3a4a40;margin-bottom:12px}
+.desc-card p:last-child{margin-bottom:0}
+.desc-card p strong,.desc-card p b{color:#1a1a2e}
+
+/* Bottom Nav */
+.bottom-nav{display:flex;align-items:center;justify-content:center;gap:16px;padding:0 16px}
+.bottom-nav .nav-btn{display:flex;align-items:center;gap:8px;padding:12px 18px;border:1.5px solid rgba(45,106,79,.15);border-radius:14px;background:rgba(255,255,255,.55);color:#2D6A4F;cursor:pointer;transition:all .2s;font-family:inherit;font-size:.85rem;user-select:none}
+.bottom-nav .nav-btn:hover{background:rgba(45,106,79,.1);border-color:#2D6A4F}
+.bottom-nav .nav-btn:active{transform:scale(.95)}
+.bottom-nav .nav-btn .label{font-size:.75rem;opacity:.6}
+.bottom-nav .nav-btn .val{font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ===== List Page ===== */
+.list-page{display:block;min-height:100vh;padding-bottom:80px}
+.list-page.hide{display:none}
+
+/* ===== Toast ===== */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(26,26,46,.9);color:#fff;padding:10px 20px;border-radius:20px;font-size:.82rem;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.toast.show{opacity:1}
+
+/* ===== Load Error ===== */
+.load-error{text-align:center;padding:60px 20px;color:#c44}
+.load-error .icon{width:48px;height:48px;margin:0 auto 12px;opacity:.5}
+.load-error .text{font-size:.9rem;margin-bottom:8px}
+.load-error .hint{font-size:.75rem;color:#999}
+
+/* ===== Responsive ===== */
+@media (max-width:640px){
+  .header h1{font-size:1.1rem}
+  .tab{font-size:.75rem;padding:6px 14px}
+  .card{padding:10px;gap:10px}
+  .card .img-col{width:60px}
+  .img-wrap{width:60px;height:48px;border-radius:10px}
+  .card .name{font-size:.82rem}
+  .card .desc{font-size:.72rem}
+  .detail-img-wrap{width:160px;height:128px}
+  .detail-name{font-size:1.15rem}
+  .bottom-nav .nav-btn{padding:10px 14px;font-size:.8rem}
+  .list-wrap{padding:0 8px 80px}
+}
+@media (max-width:380px){
+  .card .img-col{width:52px}
+  .img-wrap{width:52px;height:42px;border-radius:8px}
+  .card{gap:8px;padding:8px}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <h1>🗺️ 定向地图图例库</h1>
+  <div class="subtitle">Orienteering Map Legend Reference</div>
+  <div class="search-wrap">
+    <div class="search-wrap-inner">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" class="search-input" id="searchInput" placeholder="搜索编号或名称..." autocomplete="off">
+    </div>
+  </div>
+  <div class="tab-bar" id="tabBar"></div>
+</div>
+
+<!-- ===== LIST PAGE ===== -->
+<div class="list-page" id="listPage">
+  <div class="list-wrap" id="listWrap">
+    <div class="empty-state">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+      <div class="text">正在载入图例数据...</div>
+    </div>
+  </div>
+  <div class="empty-state" id="emptyState" style="display:none">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+    <div class="text">没有找到匹配的图例</div>
+  </div>
+</div>
+
+<!-- ===== DETAIL PAGE ===== -->
+<div class="detail-page" id="detailPage">
+  <div class="detail-nav">
+    <button class="back-btn" id="backBtn" title="返回列表">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      返回
+    </button>
+    <div class="nav-arrows">
+      <button class="nav-arrow" id="prevBtn" title="上一个">◀</button>
+      <span class="nav-count" id="navCount"></span>
+      <button class="nav-arrow" id="nextBtn" title="下一个">▶</button>
+    </div>
+  </div>
+  <div class="detail-content">
+    <div class="detail-img-wrap">
+      <img id="detailImg" src="" alt="">
+    </div>
+    <div class="detail-code" id="detailCode"></div>
+    <div class="detail-name" id="detailName"></div>
+    <div class="detail-name-en" id="detailNameEn"></div>
+    <div class="desc-card" id="descCard"></div>
+    <div class="bottom-nav">
+      <button class="nav-btn" id="bottomPrev">
+        <span style="font-size:1.1rem">◀</span>
+        <div><div class="label">上一个</div><div class="val" id="prevLabel"></div></div>
+      </button>
+      <button class="nav-btn" id="bottomNext">
+        <div style="text-align:right"><div class="label">下一个</div><div class="val" id="nextLabel"></div></div>
+        <span style="font-size:1.1rem">▶</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="data/symbols.js"></script>
+<script>
+(function() {
+  "use strict";
+
+  var DATA_URL = "data/symbols.json";
+
+  // ===== STATE =====
+  var allSymbols = [];
+  var byStandard = {};
+  var standardList = [];
+  var currentStandard = 'all';
+  var currentDetailList = [];
+  var currentDetailIndex = -1;
+  var searchQuery = '';
+
+  // ===== DOM REFS =====
+  var $listWrap = document.getElementById('listWrap');
+  var $emptyState = document.getElementById('emptyState');
+  var $listPage = document.getElementById('listPage');
+  var $detailPage = document.getElementById('detailPage');
+  var $searchInput = document.getElementById('searchInput');
+  var $tabBar = document.getElementById('tabBar');
+  var $detailImg = document.getElementById('detailImg');
+  var $detailCode = document.getElementById('detailCode');
+  var $detailName = document.getElementById('detailName');
+  var $detailNameEn = document.getElementById('detailNameEn');
+  var $descCard = document.getElementById('descCard');
+  var $navCount = document.getElementById('navCount');
+  var $prevLabel = document.getElementById('prevLabel');
+  var $nextLabel = document.getElementById('nextLabel');
+  var $toast = document.getElementById('toast');
+
+  // ===== UTILS =====
+  function escHtml(s) {
+    if (!s) return '';
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function normalize(v) {
+    return String(v || '').trim();
+  }
+
+  // ===== JSON LOADING (4-layer fallback, XHR-first for file://) =====
+  function loadJSON(url) {
+    // Layer 1: Async XHR — most reliable on file://
+    return new Promise(function(resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      try { xhr.overrideMimeType('application/json'); } catch(ignored) {}
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState !== 4) return;
+        if (xhr.status === 0 || (xhr.status >= 200 && xhr.status < 300)) {
+          try { resolve(JSON.parse(xhr.responseText)); }
+          catch(e) { reject(new Error('JSON parse error: ' + e.message)); }
+        } else {
+          reject(new Error('XHR HTTP ' + xhr.status));
+        }
+      };
+      xhr.onerror = function() { reject(new Error('XHR network error')); };
+      xhr.ontimeout = function() { reject(new Error('XHR timeout')); };
+      xhr.send(null);
+    }).catch(function(xhrErr) {
+      // Layer 2: fetch — works on HTTP servers
+      return fetch(url).then(function(response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      }).catch(function() { throw xhrErr; });
+    }).catch(function(err1) {
+      // Layer 3: iframe — last resort for file://
+      return new Promise(function(resolve, reject) {
+        var frame = document.createElement('iframe');
+        frame.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:0;';
+        var cleanup = function() { frame.remove(); };
+        var timer = setTimeout(function() {
+          cleanup();
+          reject(new Error('iframe timeout'));
+        }, 5000);
+        frame.onload = function() {
+          clearTimeout(timer);
+          try {
+            var doc = frame.contentDocument || frame.contentWindow && frame.contentWindow.document;
+            var text = doc && doc.body ? doc.body.textContent || doc.body.innerText || '' : '';
+            cleanup();
+            if (!text) { reject(new Error('iframe returned empty')); return; }
+            resolve(JSON.parse(text));
+          } catch(e) { cleanup(); reject(new Error('iframe: ' + e.message)); }
+        };
+        frame.onerror = function() { clearTimeout(timer); cleanup(); reject(new Error('iframe load error')); };
+        document.body.appendChild(frame);
+        frame.src = url;
+      });
+    }).catch(function(err2) {
+      // Layer 4: Sync XHR — desperate last resort
+      try {
+        var sxhr = new XMLHttpRequest();
+        sxhr.open('GET', url, false);
+        try { sxhr.overrideMimeType('application/json'); } catch(ignored) {}
+        sxhr.send(null);
+        if (sxhr.status === 0 || (sxhr.status >= 200 && sxhr.status < 300)) {
+          return JSON.parse(sxhr.responseText);
+        }
+        throw new Error('All methods failed. Last: ' + (err2 && err2.message));
+      } catch(e) {
+        throw new Error('All 4 load methods failed. ' + (e && e.message));
+      }
+    });
+  }
+
+  // ===== DATA PREPARATION =====
+  function prepareData(raw) {
+    var arr = Array.isArray(raw) ? raw : [];
+    allSymbols = [];
+    var seen = {};
+    for (var i = 0; i < arr.length; i++) {
+      var item = arr[i];
+      var std = normalize(item.standard);
+      var id = normalize(item.id);
+      if (!std || !id) continue;
+      var key = std + '::' + id;
+      if (seen[key]) continue;
+      seen[key] = true;
+      allSymbols.push({
+        code: id,
+        name: normalize(item.name_zh) || normalize(item.name_en) || 'Untitled',
+        name_en: normalize(item.name_en) || '',
+        description: normalize(item.description),
+        icon: normalize(item.image),
+        standard: std
+      });
+    }
+
+    // Build by-standard map
+    byStandard = {};
+    for (var i = 0; i < allSymbols.length; i++) {
+      var sym = allSymbols[i];
+      if (!byStandard[sym.standard]) byStandard[sym.standard] = [];
+      byStandard[sym.standard].push(sym);
+    }
+    standardList = Object.keys(byStandard).sort().reverse();
+  }
+
+  // ===== BUILD TABS =====
+  function buildTabs() {
+    var html = '<button class="tab active" data-std="all">全部<span class="count">(' + allSymbols.length + ')</span></button>';
+    for (var i = 0; i < standardList.length; i++) {
+      var std = standardList[i];
+      var count = byStandard[std].length;
+      html += '<button class="tab" data-std="' + escHtml(std) + '">' + escHtml(std) + '<span class="count">(' + count + ')</span></button>';
+    }
+    $tabBar.innerHTML = html;
+  }
+
+  // ===== RENDER CARD =====
+  function renderCard(item) {
+    var enSub = item.name_en && item.name_en !== item.name ? '<div class="name-en">' + escHtml(item.name_en) + '</div>' : '';
+    return '<button type="button" class="card" data-std="' + escHtml(item.standard) + '" data-code="' + escHtml(item.code) + '" aria-label="查看 ' + escHtml(item.code + ' ' + item.name) + '">' +
+      '<div class="img-col"><div class="img-wrap"><img src="' + item.icon + '" alt="' + escHtml(item.code + ' ' + item.name) + '" loading="lazy"></div></div>' +
+      '<div class="text-col">' +
+        '<div class="code">' + escHtml(item.code) + '</div>' +
+        '<div class="name">' + escHtml(item.name) + '</div>' +
+        enSub +
+        '<div class="desc">' + (item.description ? escHtml(item.description) : '暂无描述') + '</div>' +
+      '</div>' +
+    '</button>';
+  }
+
+  // ===== RENDER LIST =====
+  function renderList(items, groupByStd) {
+    if (items.length === 0) {
+      $listWrap.innerHTML = '';
+      $emptyState.style.display = 'block';
+      return;
+    }
+    $emptyState.style.display = 'none';
+
+    if (!groupByStd) {
+      $listWrap.innerHTML = items.map(renderCard).join('');
+    } else {
+      var groups = {};
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        if (!groups[item.standard]) groups[item.standard] = [];
+        groups[item.standard].push(item);
+      }
+      // Use standardList order for group display
+      var html = '';
+      for (var s = 0; s < standardList.length; s++) {
+        var std = standardList[s];
+        var stdItems = groups[std];
+        if (!stdItems) continue;
+        html += '<div class="group-header">' + escHtml(std) + ' · ' + stdItems.length + ' 个结果</div>';
+        html += stdItems.map(renderCard).join('');
+      }
+      $listWrap.innerHTML = html;
+    }
+
+    // Attach click handlers
+    var cards = $listWrap.querySelectorAll('.card');
+    for (var i = 0; i < cards.length; i++) {
+      cards[i].addEventListener('click', function() {
+        openDetail(this.dataset.std, this.dataset.code);
+      });
+    }
+  }
+
+  // ===== SHOW STANDARD =====
+  function showStandard(std) {
+    currentStandard = std;
+    searchQuery = '';
+    $searchInput.value = '';
+
+    var items;
+    if (std === 'all') {
+      items = allSymbols;
+      renderList(items, true);
+    } else {
+      items = byStandard[std] || [];
+      renderList(items, false);
+    }
+
+    // Update tab active state
+    var tabs = $tabBar.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+      tabs[i].classList.toggle('active', tabs[i].dataset.std === std);
+    }
+    showListPage(true);
+  }
+
+  // ===== SEARCH =====
+  function doSearch(query) {
+    var q = (query || '').toLowerCase().trim();
+    searchQuery = q;
+    if (!q) {
+      showStandard(currentStandard);
+      return;
+    }
+    // Highlight "all" tab
+    var tabs = $tabBar.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+      tabs[i].classList.toggle('active', tabs[i].dataset.std === 'all');
+    }
+
+    var results = [];
+    for (var i = 0; i < allSymbols.length; i++) {
+      var item = allSymbols[i];
+      var haystack = (item.code + ' ' + item.name + ' ' + (item.name_en||'') + ' ' + item.description + ' ' + item.standard).toLowerCase();
+      if (haystack.indexOf(q) !== -1) {
+        results.push(item);
+      }
+    }
+    renderList(results, true);
+    showListPage(true);
+  }
+
+  // ===== SHOW LIST PAGE =====
+  function showListPage(skipHashUpdate) {
+    $listPage.classList.remove('hide');
+    $detailPage.classList.remove('show');
+    if (!skipHashUpdate && window.location.hash) {
+      history.pushState('', document.title, window.location.pathname + window.location.search);
+    }
+  }
+
+  // ===== OPEN DETAIL =====
+  function openDetail(std, code) {
+    var list = byStandard[std] || allSymbols;
+    currentDetailIndex = -1;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].code === code && list[i].standard === std) {
+        currentDetailList = list;
+        currentDetailIndex = i;
+        break;
+      }
+    }
+    if (currentDetailIndex === -1) {
+      currentDetailList = allSymbols;
+      for (var i = 0; i < allSymbols.length; i++) {
+        if (allSymbols[i].code === code && allSymbols[i].standard === std) {
+          currentDetailIndex = i;
+          break;
+        }
+      }
+    }
+    if (currentDetailIndex === -1) {
+      showListPage();
+      return;
+    }
+    renderDetail();
+    $listPage.classList.add('hide');
+    $detailPage.classList.add('show');
+    window.location.hash = 'detail/' + encodeURIComponent(std) + '/' + encodeURIComponent(code);
+    window.scrollTo(0, 0);
+  }
+
+  function renderDetail() {
+    var item = currentDetailList[currentDetailIndex];
+    if (!item) return;
+
+    $detailImg.src = item.icon;
+    $detailImg.alt = item.code + ' ' + item.name;
+    $detailCode.textContent = item.code;
+    $detailName.textContent = item.name;
+    $detailNameEn.textContent = item.name_en && item.name_en !== item.name ? item.name_en : '';
+
+    var desc = item.description || '';
+    var rawParts = desc.split(/(?<=[.。！？])/);
+    var parts = [];
+    for (var i = 0; i < rawParts.length; i++) {
+      var p = rawParts[i].trim();
+      if (!p) continue;
+      parts.push(p);
+    }
+    var paragraphs = [];
+    var buf = '';
+    var count = 0;
+    for (var i = 0; i < parts.length; i++) {
+      if (buf) buf += '';
+      buf += parts[i];
+      count++;
+      if (count >= 3 || i === parts.length - 1) {
+        paragraphs.push(buf);
+        buf = '';
+        count = 0;
+      }
+    }
+    if (buf.trim()) paragraphs.push(buf);
+
+    if (paragraphs.length === 0) paragraphs.push('暂无描述');
+    $descCard.innerHTML = paragraphs.map(function(p) {
+      return '<p>' + escHtml(p) + '</p>';
+    }).join('');
+
+    var total = currentDetailList.length;
+    var pos = currentDetailIndex + 1;
+    $navCount.textContent = pos + ' / ' + total;
+
+    if (currentDetailIndex > 0) {
+      var prev = currentDetailList[currentDetailIndex - 1];
+      $prevLabel.textContent = prev.code + ' ' + prev.name;
+      document.getElementById('bottomPrev').style.visibility = 'visible';
+      document.getElementById('prevBtn').style.visibility = 'visible';
+    } else {
+      $prevLabel.textContent = '—';
+      document.getElementById('bottomPrev').style.visibility = 'hidden';
+      document.getElementById('prevBtn').style.visibility = 'hidden';
+    }
+    if (currentDetailIndex < total - 1) {
+      var next = currentDetailList[currentDetailIndex + 1];
+      $nextLabel.textContent = next.code + ' ' + next.name;
+      document.getElementById('bottomNext').style.visibility = 'visible';
+      document.getElementById('nextBtn').style.visibility = 'visible';
+    } else {
+      $nextLabel.textContent = '—';
+      document.getElementById('bottomNext').style.visibility = 'hidden';
+      document.getElementById('nextBtn').style.visibility = 'hidden';
+    }
+  }
+
+  function navigateDetail(direction) {
+    var newIndex = currentDetailIndex + direction;
+    if (newIndex < 0) newIndex = currentDetailList.length - 1;
+    else if (newIndex >= currentDetailList.length) newIndex = 0;
+    currentDetailIndex = newIndex;
+    var item = currentDetailList[currentDetailIndex];
+    window.location.hash = 'detail/' + encodeURIComponent(item.standard) + '/' + encodeURIComponent(item.code);
+    renderDetail();
+    window.scrollTo(0, 0);
+  }
+
+  // ===== EVENT LISTENERS =====
+  var searchTimer;
+  $searchInput.addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function() {
+      doSearch($searchInput.value);
+    }, 200);
+  });
+
+  $tabBar.addEventListener('click', function(e) {
+    var tab = e.target.closest('.tab');
+    if (!tab) return;
+    showStandard(tab.dataset.std);
+  });
+
+  document.getElementById('backBtn').addEventListener('click', function() {
+    if (currentDetailList.length > 0 && currentDetailIndex >= 0) {
+      showStandard(currentDetailList[currentDetailIndex].standard);
+    } else {
+      showStandard('all');
+    }
+    showListPage();
+  });
+
+  document.getElementById('prevBtn').addEventListener('click', function() { navigateDetail(-1); });
+  document.getElementById('nextBtn').addEventListener('click', function() { navigateDetail(1); });
+  document.getElementById('bottomPrev').addEventListener('click', function() { navigateDetail(-1); });
+  document.getElementById('bottomNext').addEventListener('click', function() { navigateDetail(1); });
+
+  document.addEventListener('keydown', function(e) {
+    if ($detailPage.classList.contains('show')) {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); navigateDetail(-1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); navigateDetail(1); }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        showListPage();
+        showStandard(currentDetailList.length > 0 && currentDetailIndex >= 0 ? currentDetailList[currentDetailIndex].standard : 'all');
+      }
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      showListPage();
+      $searchInput.focus();
+      $searchInput.select();
+    }
+  });
+
+  // ===== ROUTE HANDLING =====
+  function handleRoute() {
+    var hash = window.location.hash;
+    if (!hash || hash === '#') return;
+    var m = hash.match(/^#detail\/(.+)\/(.+)$/);
+    if (m) {
+      var std = decodeURIComponent(m[1]);
+      var code = decodeURIComponent(m[2]);
+      var list = byStandard[std];
+      if (list) {
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].code === code) {
+            currentDetailList = list;
+            currentDetailIndex = i;
+            renderDetail();
+            $listPage.classList.add('hide');
+            $detailPage.classList.add('show');
+            window.scrollTo(0, 0);
+            return;
+          }
+        }
+      }
+      // Search all symbols
+      for (var i = 0; i < allSymbols.length; i++) {
+        if (allSymbols[i].standard === std && allSymbols[i].code === code) {
+          currentDetailList = allSymbols;
+          currentDetailIndex = i;
+          renderDetail();
+          $listPage.classList.add('hide');
+          $detailPage.classList.add('show');
+          window.scrollTo(0, 0);
+          return;
+        }
+      }
+    }
+  }
+
+  // ===== ERROR DISPLAY =====
+  function showError(msg) {
+    $listWrap.innerHTML = '<div class="load-error">' +
+      '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6m0-6 6 6"/></svg>' +
+      '<div class="text">数据载入失败</div>' +
+      '<div class="hint">' + escHtml(msg) + '</div>' +
+      '</div>';
+  }
+
+  // ===== TOAST =====
+  var toastTimer;
+  function showToast(msg) {
+    $toast.textContent = msg;
+    $toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() { $toast.classList.remove('show'); }, 2000);
+  }
+
+  // ===== INIT =====
+  function init() {
+    // Primary path: preloaded via <script src="data/symbols.js"> (works on file://)
+    var preloaded = window.__SYMBOLS_DATA__;
+    if (preloaded && Array.isArray(preloaded) && preloaded.length) {
+      startApp(preloaded);
+      return;
+    }
+    // Fallback path: runtime loading (works on HTTP servers)
+    loadJSON(DATA_URL).then(function(data) {
+      startApp(data);
+    }).catch(function(err) {
+      showError(err && err.message ? err.message : '无法读取 data/symbols.json');
+    });
+  }
+
+  function startApp(data) {
+    prepareData(data);
+    if (!allSymbols.length) {
+      showError('symbols.json 中没有有效数据');
+      return;
+    }
+    buildTabs();
+    showStandard('all');
+    handleRoute();
+
+    console.log('🗺️ 定向地图图例库已就绪');
+    console.log('  ← →  切换符号');
+    console.log('  Esc  返回列表');
+    console.log('  Ctrl+K 聚焦搜索');
+    console.log('  共 ' + allSymbols.length + ' 个图例, ' + standardList.length + ' 个标准');
+  }
+
+  // Event binding
+  window.addEventListener('hashchange', handleRoute);
+
+  // Start
+  init();
+})();
+</script>
+</body>
+</html>
